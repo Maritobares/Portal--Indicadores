@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Acceso autorizado | Mutual 22</title>
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; display:grid; place-items:center;
+      font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#1d2a3a;padding:24px;
+    }
+    .card{
+      width:min(520px,100%);background:#fff;border-radius:18px;padding:30px;
+      box-shadow:0 16px 45px rgba(22,34,51,.12);border:1px solid #e7edf5;text-align:center;
+    }
+    h1{font-size:24px;margin:0 0 10px}
+    p{color:#667085;line-height:1.5}
+    .email{font-weight:700;color:#0b4f8a;margin:16px 0 24px;word-break:break-all}
+    .actions{display:grid;gap:12px}
+    a,button{
+      display:block;width:100%;padding:14px 16px;border-radius:10px;border:0;
+      font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;
+    }
+    a{background:#0b4f8a;color:#fff}
+    button{background:#eef2f6;color:#344054}
+    .note{font-size:12px;margin-top:20px;color:#98a2b3}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Acceso autorizado</h1>
+    <p>Tu sesión de Supabase está activa.</p>
+    <div id="email" class="email"></div>
+
+    <div class="actions">
+      <a id="openPortal" href="#" target="_blank" rel="noopener">ABRIR PORTAL DE INDICADORES</a>
+      <button id="logout">CERRAR SESIÓN</button>
+    </div>
+
+    <p class="note">
+      Esta es una prueba de autenticación. El portal actual sigue siendo público si alguien conoce su URL original.
+    </p>
+  </main>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, PORTAL_URL } from "./config.js";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      window.location.replace("./index.html");
+    } else {
+      document.getElementById("email").textContent = session.user.email ?? "Usuario autenticado";
+      document.getElementById("openPortal").href = PORTAL_URL;
+    }
+
+    document.getElementById("logout").addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.replace("./index.html");
+    });
+  </script>
+</body>
+</html>

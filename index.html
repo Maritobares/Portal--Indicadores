@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Portal de Indicadores | Mutual 22 de Septiembre</title>
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; display:grid; place-items:center;
+      font-family:Arial,Helvetica,sans-serif; background:#f4f7fb; color:#1d2a3a;
+      padding:24px;
+    }
+    .card{
+      width:min(440px,100%); background:#fff; border-radius:18px;
+      box-shadow:0 16px 45px rgba(22,34,51,.12); overflow:hidden;
+      border:1px solid #e7edf5;
+    }
+    .head{
+      background:linear-gradient(135deg,#0b4f8a,#1677b8);
+      color:#fff; padding:28px 28px 22px; text-align:center;
+    }
+    .logo{
+      width:64px;height:64px;margin:0 auto 12px;border-radius:50%;
+      display:grid;place-items:center;background:#fff;color:#0b4f8a;
+      font-weight:700;font-size:24px;
+    }
+    h1{font-size:22px;margin:0 0 6px}
+    .sub{font-size:14px;opacity:.9;margin:0}
+    form{padding:26px 28px 28px}
+    label{display:block;font-size:13px;font-weight:700;margin:0 0 6px}
+    input{
+      width:100%;padding:13px 14px;border:1px solid #cfd8e3;border-radius:10px;
+      font-size:16px;margin-bottom:16px;outline:none;
+    }
+    input:focus{border-color:#1677b8;box-shadow:0 0 0 3px rgba(22,119,184,.12)}
+    button{
+      width:100%;border:0;border-radius:10px;padding:14px 16px;
+      font-size:15px;font-weight:700;cursor:pointer;background:#0b4f8a;color:#fff;
+    }
+    button:disabled{opacity:.65;cursor:not-allowed}
+    .msg{min-height:22px;margin:14px 0 0;font-size:13px;text-align:center}
+    .error{color:#b42318}
+    .ok{color:#067647}
+    .foot{padding:0 28px 24px;text-align:center;font-size:12px;color:#667085}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="head">
+      <div class="logo">22</div>
+      <h1>Portal de Indicadores</h1>
+      <p class="sub">Asociación Mutual 22 de Septiembre</p>
+    </div>
+
+    <form id="loginForm">
+      <label for="email">Correo electrónico</label>
+      <input id="email" type="email" autocomplete="username" required />
+
+      <label for="password">Contraseña</label>
+      <input id="password" type="password" autocomplete="current-password" required />
+
+      <button id="btnLogin" type="submit">INICIAR SESIÓN</button>
+      <div id="msg" class="msg"></div>
+    </form>
+
+    <div class="foot">Acceso privado al portal de gestión</div>
+  </main>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./config.js";
+
+    const msg = document.getElementById("msg");
+    const btn = document.getElementById("btnLogin");
+
+    if (
+      SUPABASE_URL.includes("PEGAR_") ||
+      SUPABASE_PUBLISHABLE_KEY.includes("PEGAR_")
+    ) {
+      msg.textContent = "Falta completar config.js con los datos de Supabase.";
+      msg.className = "msg error";
+    }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) window.location.replace("./acceso.html");
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+      btn.disabled = true;
+      btn.textContent = "INGRESANDO...";
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        msg.textContent = "Correo o contraseña incorrectos.";
+        msg.className = "msg error";
+        btn.disabled = false;
+        btn.textContent = "INICIAR SESIÓN";
+        return;
+      }
+
+      msg.textContent = "Acceso correcto.";
+      msg.className = "msg ok";
+      window.location.replace("./acceso.html");
+    });
+  </script>
+</body>
+</html>
